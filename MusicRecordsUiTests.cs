@@ -7,16 +7,13 @@ namespace MusicRecordsUITest;
 [TestClass]
 public sealed class MusicRecordsUiTests
 {
-    private IWebDriver? _driver;
-
     [TestMethod]
     public void GetAllRecords_DisplaysAllSixRecords()
     {
+        // Arrange
         var options = new EdgeOptions();
         options.AddArgument("--headless=new");
-
         var driver = new EdgeDriver(options);
-        _driver = driver;
 
         var indexPath = Path.GetFullPath(Path.Combine(
             AppContext.BaseDirectory,
@@ -24,22 +21,22 @@ public sealed class MusicRecordsUiTests
             "RestMusicFrontEnd",
             "index.html"));
 
-        driver.Navigate().GoToUrl("http://localhost:5209/api/musicRecords");
-        driver.FindElement(By.Id("button1")).Click();
+        try
+        {
+            driver.Navigate().GoToUrl("http://127.0.0.1:5500/index.html");
 
-        var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
-        wait.Until(d => d.FindElements(By.CssSelector("#app ul li.list-group-item")).Count > 0);
+            // Act
+            driver.FindElement(By.Id("button1")).Click();
+            var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
+            wait.Until(d => d.FindElements(By.CssSelector("#app ul li.list-group-item")).Count > 0);
 
-        var records = driver.FindElements(By.CssSelector("#app ul li.list-group-item"));
-        Assert.HasCount(6, records);
-    }
-
-
-
-    [TestCleanup]
-    public void CleanUp()
-    {
-        _driver?.Quit();
-        _driver?.Dispose();
+            // Assert
+            var records = driver.FindElements(By.CssSelector("#app ul li.list-group-item"));
+            Assert.HasCount(6, records);
+        }
+        finally
+        {
+            driver.Quit();
+        }
     }
 }
