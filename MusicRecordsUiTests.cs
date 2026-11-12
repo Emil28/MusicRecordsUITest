@@ -24,7 +24,7 @@ public sealed class MusicRecordsUiTests
             "RestMusicFrontEnd",
             "index.html"));
 
-        driver.Navigate().GoToUrl(new Uri(indexPath).AbsoluteUri);
+        driver.Navigate().GoToUrl("http://localhost:5209/api/musicRecords");
         driver.FindElement(By.Id("button1")).Click();
 
         var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));
@@ -33,6 +33,8 @@ public sealed class MusicRecordsUiTests
         var records = driver.FindElements(By.CssSelector("#app ul li.list-group-item"));
         Assert.HasCount(6, records);
     }
+
+
 
     [TestCleanup]
     public void CleanUp()
