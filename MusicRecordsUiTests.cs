@@ -19,7 +19,24 @@ public sealed class MusicRecordsUiTests
         
         driver.FindElement(By.CssSelector("input[placeholder='Password']")).SendKeys("123");
         driver.FindElement(By.CssSelector("button[type='submit']")).Click();
-        wait.Until(d => d.Url.EndsWith("/index.html", StringComparison.OrdinalIgnoreCase));
+        try
+        {
+            wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript(
+                "return location.href.toLowerCase().endsWith('/index.html') || Boolean(document.querySelector('.error')?.textContent.trim());") is true);
+        }
+        catch (WebDriverTimeoutException)
+        {
+            var state = ((IJavaScriptExecutor)driver).ExecuteScript(
+                "return JSON.stringify({ url: location.href, apiBaseUrl: window.MUSIC_RECORDS_API_BASE_URL, vueLoaded: !!window.Vue, usernameLength: document.querySelector(\"input[placeholder='Username']\")?.value.length, passwordLength: document.querySelector(\"input[placeholder='Password']\")?.value.length, error: document.querySelector('.error')?.textContent });");
+            Assert.Fail($"Login did not finish. Browser state: {state}");
+        }
+
+        if (!driver.Url.EndsWith("/index.html", StringComparison.OrdinalIgnoreCase))
+        {
+            var errorMessage = driver.FindElement(By.CssSelector(".error")).Text;
+            Assert.Fail($"Login failed: {errorMessage}");
+        }
+
         wait.Until(d => d.FindElement(By.Id("button1")).Displayed);
     }
 
